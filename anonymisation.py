@@ -46,6 +46,9 @@ else:
 #Anonymiser les données
 df_anonymized = anonymize(df_input.copy())
 
+#Supprimer les colonnes d'origine
+df_anonymized.drop(df_input.columns, axis=1, inplace=True)
+
 #Nom du fichier de sortie pour les données anonymisées
 output_filename = os.path.splitext(filename)[0] + '_anonymized.csv'
 
