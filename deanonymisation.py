@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import hashlib
 
-# Générer une clé aléatoire de 64 caractères en utilisant SHA-512
+# Fonction pour générer une clé aléatoire de 64 caractères en utilisant SHA-512
 def generate_secret_key():
     secret_key = hashlib.sha512(os.urandom(64)).hexdigest()
     return secret_key
@@ -15,9 +15,11 @@ def cleanhash(s):
 def deanonymize(df):
     for column in df.columns:
         if '_hash' in column:
+            # récupérer le nom de la colonne avant l'anonymisation
             column_name = column.replace('_hash', '')
-            # Réappliquer la même fonction de hachage pour inverser l'anonymisation
+            # réappliquer la même fonction de hachage pour inverser l'anonymisation
             df[column_name] = df[column].apply(lambda x: hashlib.sha512(str(x).encode()).hexdigest()[:20])
+    # supprimer les colonnes anonymisées
     return df.drop(columns=[col for col in df.columns if '_hash' in col])
 
 # Dossier d'entrée et de sortie pour les fichiers
