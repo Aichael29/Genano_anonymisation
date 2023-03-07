@@ -24,7 +24,9 @@ seckey = "y3HsVaFY9Uj<\C#!nMnK,%q=F?dR4WA|s(bwisfcU<q.P&L"
 folder = 'C:/Users/Lenovo/Pictures/'
 folderin = folder
 folderout = folder + "out/"
-
+# Vérifier si le dossier de sortie existe et le créer s'il n'existe pas
+if not os.path.exists(folderout):
+    os.makedirs(folderout)
 # Nom du fichier d'entrée
 filename = 'input.csv'
 
