@@ -9,8 +9,7 @@ def generate_secret_key():
 
 # Fonction pour nettoyer le hachage en renvoyant les 20 premiers caractères
 def cleanhash(s):
-    return hashlib.sha512(str(s).encode()).hexdigest()[:20]
-
+    return hashlib.sha512(bytearray(str(s).strip()+generate_secret_key(), "utf8")).hexdigest()[:20]
 # Fonction pour anonymiser une colonne dans un dataframe
 def anonymize(df):
     for column in df.columns:
