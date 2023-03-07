@@ -12,7 +12,7 @@ folderout = folder + "out/"
 
 #Fonction pour nettoyer le hachage en renvoyant les 20 premiers caractères
 def cleanhash(s):
-return hashlib.sha512(str(s).encode()).hexdigest()[:20]
+    return hashlib.sha512(str(s).encode()).hexdigest()[:20]
 
 #Exemple d'utilisation
 df = pd.DataFrame({'ID': [1, 2, 3], 'Name': ['Alice', 'Bob', 'Charlie']})
@@ -26,14 +26,14 @@ print(df_deanonymized)
 
 #Fonction pour anonymiser une colonne dans un dataframe
 def anonymize(df, column):
-df[column+'_hash'] = df[column].apply(cleanhash)
-return df
+    df[column+'_hash'] = df[column].apply(cleanhash)
+    return df
 
 #Fonction pour déanonymiser une colonne dans un dataframe
 def deanonymize(df, column):
 # Réappliquer la même fonction de hachage pour inverser l'anonymisation
-df[column] = df[column+'_hash'].apply(lambda x: hashlib.sha512(str(x).encode()).hexdigest()[:20])
-return df.drop(columns=[column+'_hash'])
+    df[column] = df[column+'_hash'].apply(lambda x: hashlib.sha512(str(x).encode()).hexdigest()[:20])
+    return df.drop(columns=[column+'_hash'])
 
 #Exemple d'utilisation :
 filename = 'input.csv' # peut être n'importe quel type de fichier, par exemple .txt, .csv, .xlsx, etc.
