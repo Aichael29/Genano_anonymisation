@@ -23,12 +23,16 @@ def deanonymize(df):
     return df.drop(columns=[col for col in df.columns if '_hash' in col])
 
 # Dossier d'entrée et de sortie pour les fichiers
-folder = 'C:/Users/Lenovo/Pictures/'
+folder = 'C:/Users/Lenovo/Pictures/out/'
 folderin = folder
 folderout = folder + "out/"
 
+# Vérifier si le dossier de sortie existe et le créer s'il n'existe pas
+if not os.path.exists(folderout):
+    os.makedirs(folderout)
+
 # Nom du fichier d'entrée
-filename = 'input.xlsx'
+filename = 'input_anonymized.csv'
 
 # Chemin d'accès au fichier d'entrée
 filepath = os.path.join(folderin, filename)
