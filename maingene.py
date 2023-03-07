@@ -1,4 +1,4 @@
-import os
+"""import os
 import pandas as pd
 import hashlib
 
@@ -77,3 +77,4 @@ for filename in os.listdir(folderin):
     if os.path.isfile(filepath):
         # Processus de traitement du fichier
         process_file(filepath)
+"""
