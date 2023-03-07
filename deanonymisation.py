@@ -1,30 +1,22 @@
-import os
-import pandas as pd
-import hashlib
+'''import pandas as pd
 
-# fonction de déanonymisation
-def deanonymize(value, secret_key):
-    # utiliser la clé secrète pour déanonymiser la valeur
-    return hashlib.sha512(bytearray(str(value).strip()+secret_key, "utf8")).hexdigest()[:20]
 
-# charger le fichier de données
-input_file = input("Entrez le nom du fichier d'entrée : ")
-if os.path.splitext(input_file)[1] == '.csv':
-    data = pd.read_csv(input_file)
-elif os.path.splitext(input_file)[1] == '.xlsx':
-    data = pd.read_excel(input_file)
-else:
-    print("Le format de fichier n'est pas supporté.")
-    exit()
+def deanonymize_excel(anonymized_filename, original_filename):
+    # Charger les fichiers Excel
+    df_anonymized = pd.read_excel(anonymized_filename)
+    df_original = pd.read_excel(original_filename)
 
-# récupérer la clé secrète
-secret_key = input("Entrez la clé secrète : ")
+    # Extraire les colonnes qui ont été anonymisées
+    cols_to_anonymize = [col for col in df_anonymized.columns if col.startswith("anon_")]
 
-# déanonymiser les données
-for col in data.columns:
-    data[col] = data[col].apply(deanonymize, args=(secret_key,))
+    # Remplacer les valeurs anonymisées par les valeurs originales
+    for col in cols_to_anonymize:
+        df_anonymized[col] = df_anonymized[col].apply(
+            lambda x: df_original.loc[df_original[col].astype(str) == x, col].iloc[0])
 
-# exporter les données déanonymisées dans un fichier Excel
-output_file = input("Entrez le nom du fichier de sortie : ")
-data.to_excel(output_file, index=False)
-print("Les données ont été déanonymisées avec succès et exportées dans le fichier", output_file)
+    # Enregistrer le fichier Excel déanonymisé
+    deanonymized_filename = f"deanonymized_{anonymized_filename}"
+    df_anonymized.to_excel(deanonymized_filename, index=False)
+
+    return deanonymized_filename
+'''
