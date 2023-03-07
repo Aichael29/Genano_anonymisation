@@ -2,57 +2,29 @@ import os
 import pandas as pd
 import hashlib
 
-# Fonction pour générer une clé aléatoire de 64 caractères en utilisant SHA-512
-def generate_secret_key():
-    secret_key = hashlib.sha512(os.urandom(64)).hexdigest()
-    return secret_key
+# fonction de déanonymisation
+def deanonymize(value, secret_key):
+    # utiliser la clé secrète pour déanonymiser la valeur
+    return hashlib.sha512(bytearray(str(value).strip()+secret_key, "utf8")).hexdigest()[:20]
 
-# Fonction pour nettoyer le hachage en renvoyant les 20 premiers caractères
-def cleanhash(s):
-    return hashlib.sha512(str(s).encode()).hexdigest()[:20]
-
-# Fonction pour déanonymiser une colonne dans un dataframe
-def deanonymize(df):
-    for column in df.columns:
-        if '_hash' in column:
-            # récupérer le nom de la colonne avant l'anonymisation
-            column_name = column.replace('_hash', '')
-            # réappliquer la même fonction de hachage pour inverser l'anonymisation
-            df[column_name] = df[column].apply(lambda x: hashlib.sha512(str(x).encode()).hexdigest()[:20])
-    # supprimer les colonnes anonymisées
-    return df.drop(columns=[col for col in df.columns if '_hash' in col])
-
-# Dossier d'entrée et de sortie pour les fichiers
-folder = 'C:/Users/Lenovo/Pictures/out/'
-folderin = folder
-folderout = folder + "out/"
-
-# Vérifier si le dossier de sortie existe et le créer s'il n'existe pas
-if not os.path.exists(folderout):
-    os.makedirs(folderout)
-
-# Nom du fichier d'entrée
-filename = 'input_anonymized.csv'
-
-# Chemin d'accès au fichier d'entrée
-filepath = os.path.join(folderin, filename)
-
-# Charger le fichier d'entrée dans un dataframe
-if filepath.endswith('.csv'):
-    df_input = pd.read_csv(filepath, encoding='iso-8859-1')
-elif filepath.endswith('.xlsx'):
-    df_input = pd.read_excel(filepath)
+# charger le fichier de données
+input_file = input("Entrez le nom du fichier d'entrée : ")
+if os.path.splitext(input_file)[1] == '.csv':
+    data = pd.read_csv(input_file)
+elif os.path.splitext(input_file)[1] == '.xlsx':
+    data = pd.read_excel(input_file)
 else:
-    raise ValueError("Type de fichier non supporté")
+    print("Le format de fichier n'est pas supporté.")
+    exit()
 
-# Déanonymiser les données
-df_deanonymized = deanonymize(df_input.copy())
+# récupérer la clé secrète
+secret_key = input("Entrez la clé secrète : ")
 
-# Nom du fichier de sortie pour les données déanonymisées
-output_filename = os.path.splitext(filename)[0] + '_deanonymized.xlsx'
+# déanonymiser les données
+for col in data.columns:
+    data[col] = data[col].apply(deanonymize, args=(secret_key,))
 
-# Chemin d'accès pour le fichier de sortie
-output_filepath = os.path.join(folderout, output_filename)
-
-# Exporter les données déanonymisées dans un fichier xlsx
-df_deanonymized.to_excel(output_filepath, index=False)
+# exporter les données déanonymisées dans un fichier Excel
+output_file = input("Entrez le nom du fichier de sortie : ")
+data.to_excel(output_file, index=False)
+print("Les données ont été déanonymisées avec succès et exportées dans le fichier", output_file)
