@@ -1,6 +1,20 @@
-import pandas as pd
 import hashlib
 import os
+
+import pandas as pd
+from hashlib import sha256
+from os import urandom
+
+
+#Génère une clé secrète aléatoire pour le hachage
+def generate_secret_key():
+    return sha256(urandom(64)).hexdigest()
+
+# test de la fonction
+secret_key = generate_secret_key()
+print(secret_key)
+
+
 
 #Clé secrète pour le hachage
 seckey = "y3HsVaFY9Uj<\C#!nMnK,%q=F?dR4WA|s(bwisfcU<q.P&L"
