@@ -1,39 +1,74 @@
+import argparse
 import pandas as pd
-from anonymisation import anonymize
-from deanonymisation import dehash_columns
+from crypt import chiffrement
+from decrypt import dechiffrement
+from hash import hashage
+from verify import verification
 
-# Demander à l'utilisateur les chemins d'entrée et de sortie
-folderin = input("Entrez le chemin du dossier d'entrée: ")
-folderout = input("Entrez le chemin du dossier de sortie: ")
+# Fonction pour demander à l'utilisateur s'il souhaite chiffrer/déchiffrer toutes les colonnes ou spécifier des colonnes
+def ask_columns():
+    while True:
+        choice = input("Voulez-vous chiffrer/déchiffrer toutes les colonnes (o/n) ? ")
+        if choice.lower() == 'o':
+            return None
+        elif choice.lower() == 'n':
+            cols = input("Entrez le nom des colonnes séparées par des virgules: ")
+            return cols.split(',')
+        else:
+            print("Veuillez entrer 'o' ou 'n'.")
 
-# Lecture du fichier Excel original
-input_file = input("Entrez le nom du fichier Excel original: ")
-df_input = pd.read_excel(folderin+"/"+input_file, header=0)
+# Fonction pour demander à l'utilisateur si le fichier doit être hashé
+def ask_hash():
+    while True:
+        choice = input("Voulez-vous calculer le hash du fichier (o/n) ? ")
+        if choice.lower() == 'o':
+            return True
+        elif choice.lower() == 'n':
+            return False
+        else:
+            print("Veuillez entrer 'o' ou 'n'.")
 
-# Demander à l'utilisateur les noms des colonnes à anonymiser
-cols = input("Entrez les noms des colonnes séparés par des virgules à anonymiser: ")
-cols = cols.split(",")
+# Fonction pour demander à l'utilisateur si le fichier doit être vérifié avec un hash
+def ask_verify():
+    while True:
+        choice = input("Voulez-vous vérifier le hash du fichier (o/n) ? ")
+        if choice.lower() == 'o':
+            return True
+        elif choice.lower() == 'n':
+            return False
+        else:
+            print("Veuillez entrer 'o' ou 'n'.")
 
-# Anonymiser les colonnes sélectionnées
-df_anon = anonymize(df_input, cols)
+# Analyser les arguments de ligne de commande
+parser = argparse.ArgumentParser(description='Programme de chiffrement/déchiffrement de fichiers')
+parser.add_argument('action', help='Action à effectuer (chiffrer, déchiffrer, hasher, vérifier)')
+parser.add_argument('filename', help='Nom du fichier à traiter')
+parser.add_argument('output', help='Nom du fichier de sortie')
+args = parser.parse_args()
 
-# Écrire le fichier Excel anonymisé
-output_file = input("Entrez le nom du fichier de sortie: ")
-df_anon.to_excel(folderout+"/"+output_file, sheet_name='anonyme', index=False)
+# Exécuter l'action correspondante
+if args.action == 'chiffrer':
+    columns = ask_columns()
+    chiffrement(args.filename, args.output, columns)
+elif args.action == 'dechiffrer':
+    columns = ask_columns()
+    dechiffrement(args.filename, args.output, columns)
+elif args.action == 'hasher':
+    hashage(args.filename)
+elif args.action == 'vérifier':
+    hash = input("Entrez le hash du fichier: ")
+    verification(args.filename, hash)
+else:
+    print('Action non reconnue.')
 
-# Demander à l'utilisateur les noms des colonnes à désanonymiser
-cols = input("Entrez les noms des colonnes séparés par des virgules à désanonymiser: ")
-cols = cols.split(",")
+# Demander à l'utilisateur si le fichier doit être hashé et vérifié (uniquement pour les actions de chiffrement/déchiffrement)
+if args.action in ['chiffrer', 'dechiffrer']:
+    hash_file = ask_hash()
+    if hash_file:
+        hash = hashage(args.output)
+        print(f"Le hash du fichier est: {hash}")
 
-# Lecture du fichier Excel anonymisé
-input_file = output_file
-df_input = pd.read_excel(folderout+"/"+input_file, header=0)
-
-# Désanonymiser les colonnes sélectionnées
-dehash_columns(df_input, cols)
-
-# Écrire le fichier Excel désanonymisé
-output_file = "deanonymise_" + output_file
-df_input.to_excel(folderout+"/"+output_file, sheet_name='deanonymise', index=False)
-
-print("Opération terminée avec succès !")
+    verify_file = ask_verify()
+    if verify_file:
+        hash = input("Entrez le hash du fichier: ")
+        verification(args.output, hash)
