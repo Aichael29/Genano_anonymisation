@@ -1,34 +1,32 @@
+import pandas as pd
 import hashlib
-from openpyxl import load_workbook
+import configparser
 
-def generate_hash(file_path):
-    # Charge le fichier XLSX avec openpyxl
-    workbook = load_workbook(filename=file_path, read_only=True)
+# Lecture du fichier de configuration
+config = configparser.ConfigParser()
+config.read('configuration.conf')
 
-    # Récupère le contenu de chaque cellule de chaque feuille
-    content = ''
-    for sheet in workbook:
-        for row in sheet:
-            for cell in row:
-                if cell.value:
-                    content += str(cell.value)
+# Colonnes à hasher
+colonnes = config['Operation'].get('colonnes', None)
+if colonnes is None:
+    colonnes = []
 
-    # Calcule le hash SHA256 du contenu
-    sha256 = hashlib.sha256()
-    sha256.update(content.encode('utf-8'))
-    return sha256.hexdigest()
+# Charger le fichier Excel dans un dataframe Pandas
+fichier_entree = config['fileinfo']['fichier_entree']
+df = pd.read_excel(fichier_entree)
 
-if __name__ == '__main__':
-    # Exemple d'utilisation
+# Définir une fonction pour hasher les valeurs d'une colonne avec SHA256
+def sha256_hash(value):
+    return hashlib.sha256(value.encode()).hexdigest()
 
-    #Générer le hash du fichier
-    hash_value1 = generate_hash('input.xlsx')
+# Appliquer la fonction de hashage à chaque colonne choisie
+if colonnes:
+    colonnes = colonnes.split(',')
+else:
+    colonnes = df.columns.tolist()
+for col in colonnes:
+    df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
 
-    # Générer le hash du fichier
-    hash_value2 = generate_hash('output1.xlsx')
-
-    # Vérifier si le hash calculé correspond au hash attendu
-    if hash_value1 == hash_value2:
-        print('Les données du fichier sont intègres.')
-    else:
-        print('Les données du fichier sont corrompues.')
+# Enregistrer le fichier Excel hashé
+fichier_sortie = config['fileinfo']['fichier_sortie']
+df.to_excel(fichier_sortie, index=False)

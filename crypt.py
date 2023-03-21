@@ -1,34 +1,68 @@
 import pandas as pd
 from Cryptodome.Cipher import AES
 from Cryptodome.Util.Padding import pad
+from Cryptodome.Random import get_random_bytes
 import configparser
 
-# Charger le fichier de configuration
+# Lecture du fichier de configuration
 config = configparser.ConfigParser()
 config.read('configuration.conf')
 
-# Récupérer les paramètres de configuration
-key = config['operation']['cle_chiffrement']
-vector = config['operation']['vector']
-columns_to_encrypt = config['operation']['colonnes'].split(',')
-input_file = config['fileinfo']['fichier_entree']
-output_file = config['fileinfo']['fichier_sortie']
+# Opération de chiffrement ou de déchiffrement
+operation = config['Operation']['operation']
 
-# Définir une fonction pour crypter les valeurs d'une colonne
-def aes_encrypt(value, key, vector):
-    cipher = AES.new(key.encode(), AES.MODE_CBC, iv=vector.encode())
-    if isinstance(value, int):  # vérifier si la valeur est un entier
-        value = str(value)  # convertir l'entier en chaîne de caractères
-    padded_value = pad(value.encode(), AES.block_size)
+# Mode de chiffrement (ECB ou CBC)
+mode_chiffrement = config['Operation']['mode_chiffrement']
+
+# Clé de chiffrement
+cle_chiffrement = config['Operation']['cle_chiffrement']
+
+# Vecteur d'initialisation
+vecteur = config['Operation']['vector']
+
+# Charger le fichier Excel dans un dataframe Pandas
+fichier_entree = config['fileinfo']['fichier_entree']
+df = pd.read_excel(fichier_entree)
+
+# Vérifier si la clé a la bonne taille
+if len(cle_chiffrement) != 16:
+    print("La clé doit être de 16 caractères.")
+    exit()
+
+# Vérifier si le mode de chiffrement est valide
+if mode_chiffrement not in ('ECB', 'CBC'):
+    print("Le mode de chiffrement doit être soit ECB ou CBC.")
+    exit()
+
+# Vérifier si le vecteur d'initialisation a la bonne taille
+if mode_chiffrement == 'CBC' and len(vecteur) != 16:
+    print("Le vecteur d'initialisation doit être de 16 octets.")
+    exit()
+
+# Définir une fonction pour crypter les valeurs d'une colonne avec AES en mode CBC ou ECB
+def aes_encrypt(value, key, mode_chiffrement, iv=None):
+    if mode_chiffrement == 'CBC' and iv is None:
+        raise ValueError("Le vecteur d'initialisation doit être spécifié pour le mode CBC.")
+    if mode_chiffrement == 'CBC':
+        cipher = AES.new(key.encode(), AES.MODE_CBC, iv.encode())
+    else:
+        cipher = AES.new(key.encode(), AES.MODE_ECB)
+    if isinstance(value, str):
+        padded_value = pad(value.encode(), AES.block_size)
+    elif isinstance(value, int):
+        padded_value = pad(str(value).encode(), AES.block_size)
+    elif isinstance(value, float):
+        padded_value = pad(str(value).encode(), AES.block_size)
+    else:
+        raise ValueError("Type de données non pris en charge.")
     encrypted_value = cipher.encrypt(padded_value)
     return encrypted_value.hex()
 
-# Charger le fichier Excel dans un dataframe Pandas
-df = pd.read_excel(input_file)
 
-# Appliquer la fonction de chiffrement à chaque colonne choisie
-for col in columns_to_encrypt:
-    df[col] = df[col].apply(lambda x: aes_encrypt(x, key, vector))
+# Appliquer la fonction de chiffrement à chaque colonne
+for col in df.columns:
+    df[col] = df[col].apply(lambda x: aes_encrypt(x, cle_chiffrement, mode_chiffrement, iv=vecteur if mode_chiffrement == 'CBC' else None))
 
 # Enregistrer le fichier Excel crypté
-df.to_excel(output_file, index=False)
+fichier_sortie = config['fileinfo']['fichier_sortie']
+df.to_excel(fichier_sortie, index=False)

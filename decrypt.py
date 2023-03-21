@@ -1,28 +1,64 @@
 import pandas as pd
 from Cryptodome.Cipher import AES
 from Cryptodome.Util.Padding import unpad
+import configparser
+
+# Lecture du fichier de configuration
+config = configparser.ConfigParser()
+config.read('configuration.conf')
+
+# Opération de chiffrement ou de déchiffrement
+operation = config['Operation']['operation']
+
+# Mode de chiffrement (ECB ou CBC)
+mode_chiffrement = config['Operation']['mode_chiffrement']
+
+# Clé de chiffrement
+cle_chiffrement = config['Operation']['cle_chiffrement']
+
+# Vecteur d'initialisation
+vecteur = config['Operation']['vector']
 
 # Charger le fichier Excel crypté dans un dataframe Pandas
-encrypted_file_path = input("Veuillez entrer le chemin du fichier crypté : ")
-df = pd.read_excel(encrypted_file_path)
+fichier_entree = config['fileinfo']['fichier_entree']
+df = pd.read_excel(fichier_entree)
 
-# Choisir les colonnes que vous souhaitez décrypter
-columns_to_decrypt = input("Veuillez entrer les noms des colonnes à décrypter, séparés par des virgules: ").split(',')
+# Vérifier si la clé a la bonne taille
+if len(cle_chiffrement) != 16:
+    print("La clé doit être de 16 caractères.")
+    exit()
 
-# Demander à l'utilisateur de saisir la clé pour le décryptage
-key = input("Veuillez entrer la clé de décryptage : ")
+# Vérifier si le mode de chiffrement est valide
+if mode_chiffrement not in ('ECB', 'CBC'):
+    print("Le mode de chiffrement doit être soit ECB ou CBC.")
+    exit()
 
-# Définir une fonction pour décrypter les valeurs de la colonne
-def aes_decrypt(value, key):
-    cipher = AES.new(key.encode(), AES.MODE_ECB)
-    decrypted_value = cipher.decrypt(bytes.fromhex(value))
-    unpadded_value = unpad(decrypted_value, AES.block_size)
-    return unpadded_value.decode()
+# Check if IV is required for mode
+if mode_chiffrement == 'CBC' and len(vecteur) != 16:
+    raise ValueError("Le vecteur d'initialisation doit être de 16 octets.")
 
-# Appliquer la fonction de décryptage aux colonnes choisies
-for col in columns_to_decrypt:
-    df[col] = df[col].apply(lambda x: aes_decrypt(x, key))
+# Define decryption function
+def aes_decrypt(value, key, mode_chiffrement, iv=None):
+    if mode_chiffrement == 'CBC' and iv is None:
+        raise ValueError("Le vecteur d'initialisation doit être spécifié pour le mode CBC.")
+    if mode_chiffrement == 'ECB' and iv is not None:
+        raise ValueError("IV n'est pas utile pour le mode ECB.")
+    if mode_chiffrement == 'CBC':
+        cipher = AES.new(key.encode(), AES.MODE_CBC, iv.encode())
+    else:
+        cipher = AES.new(key.encode(), AES.MODE_ECB)
+    encrypted_value = bytes.fromhex(value)
+    decrypted_value = unpad(cipher.decrypt(encrypted_value), AES.block_size)
+    if isinstance(decrypted_value, bytes):
+        return decrypted_value.decode()
+    else:
+        return decrypted_value
 
-# Enregistrer le fichier Excel décrypté
-decrypted_file_path = input("Veuillez entrer le chemin de sortie pour le fichier décrypté : ")
-df.to_excel(decrypted_file_path, index=False)
+
+# Apply decryption to each column
+for col in df.columns:
+    df[col] = df[col].apply(lambda x: aes_decrypt(x, cle_chiffrement, mode_chiffrement, iv=vecteur if mode_chiffrement == 'CBC' else None))
+
+#Enregistrer le fichier Excel déchiffré
+fichier_sortie = config['fileinfo']['fichier_sortie']
+df.to_excel(fichier_sortie, index=False)
