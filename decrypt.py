@@ -8,16 +8,16 @@ config = configparser.ConfigParser()
 config.read('configuration.conf')
 
 # Opération de chiffrement ou de déchiffrement
-operation = config['Operation']['operation']
+operation = config['Operations']['operation']
 
 # Mode de chiffrement (ECB ou CBC)
-mode_chiffrement = config['Operation']['mode_chiffrement']
+mode_chiffrement = config['Operations']['mode_chiffrement']
 
 # Clé de chiffrement
-cle_chiffrement = config['Operation']['cle_chiffrement']
+cle_chiffrement = config['Operations']['cle_chiffrement']
 
 # Vecteur d'initialisation
-vecteur = config['Operation']['vector']
+vecteur = config['Operations']['vector']
 
 # Charger le fichier Excel crypté dans un dataframe Pandas
 fichier_entree = config['fileinfo']['fichier_entree']

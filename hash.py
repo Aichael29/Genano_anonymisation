@@ -7,7 +7,7 @@ config = configparser.ConfigParser()
 config.read('configuration.conf')
 
 # Colonnes à hasher
-colonnes = config['Operation'].get('colonnes', None)
+colonnes = config['Operations'].get('colonnes', None)
 if colonnes is None:
     colonnes = []
 
