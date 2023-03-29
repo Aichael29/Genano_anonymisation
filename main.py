@@ -1,7 +1,9 @@
 import configparser
 import sys
 import subprocess
+import time
 
+start=time.time()
 # Lecture du fichier de configuration
 config = configparser.ConfigParser()
 config.read('configuration.conf')
@@ -19,3 +21,6 @@ elif operation == 'hashage':
 else:
     print("Opération non reconnue.")
     sys.exit(1)
+
+end=time.time()
+print("xlsx généré en " + str(end - start) + " secondes")

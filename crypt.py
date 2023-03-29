@@ -1,7 +1,6 @@
 import pandas as pd
 from Cryptodome.Cipher import AES
 from Cryptodome.Util.Padding import pad
-from Cryptodome.Random import get_random_bytes
 import configparser
 
 # Lecture du fichier de configuration
