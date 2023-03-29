@@ -7,7 +7,7 @@ config = configparser.ConfigParser()
 config.read('configuration.conf')
 
 # Opération à effectuer
-operation = config['Operation']['operation']
+operation = config['Operations']['operation']
 
 # Exécuter le fichier Python correspondant à l'opération
 if operation == 'chiffrement':
