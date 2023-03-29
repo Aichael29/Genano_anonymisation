@@ -14,6 +14,11 @@ operation = config['Operations']['operation']
 # Mode de chiffrement (ECB ou CBC)
 mode_chiffrement = config['Operations']['mode_chiffrement']
 
+# Colonnes à crypter
+colonnes = config['Operations'].get('colonnes', None)
+if colonnes is None:
+    colonnes = []
+
 # Clé de chiffrement
 cle_chiffrement = config['Operations']['cle_chiffrement']
 
@@ -59,8 +64,13 @@ def aes_encrypt(value, key, mode_chiffrement, iv=None):
     return encrypted_value.hex()
 
 
-# Appliquer la fonction de chiffrement à chaque colonne
-for col in df.columns:
+
+# Appliquer la fonction de cryptage à chaque colonne choisie
+if colonnes:
+    colonnes = colonnes.split(',')
+else:
+    colonnes = df.columns.tolist()
+for col in colonnes:
     df[col] = df[col].apply(lambda x: aes_encrypt(x, cle_chiffrement, mode_chiffrement, iv=vecteur if mode_chiffrement == 'CBC' else None))
 
 # Enregistrer le fichier Excel crypté

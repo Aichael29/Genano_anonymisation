@@ -19,6 +19,11 @@ cle_chiffrement = config['Operations']['cle_chiffrement']
 # Vecteur d'initialisation
 vecteur = config['Operations']['vector']
 
+# Colonnes à decrypter
+colonnes = config['Operations'].get('colonnes', None)
+if colonnes is None:
+    colonnes = []
+
 # Charger le fichier Excel crypté dans un dataframe Pandas
 fichier_entree = config['fileinfo']['fichier_entree']
 df = pd.read_excel(fichier_entree)
@@ -55,8 +60,12 @@ def aes_decrypt(value, key, mode_chiffrement, iv=None):
         return decrypted_value
 
 
-# Apply decryption to each column
-for col in df.columns:
+# Appliquer la fonction de decryptage à chaque colonne choisie
+if colonnes:
+    colonnes = colonnes.split(',')
+else:
+    colonnes = df.columns.tolist()
+for col in colonnes:
     df[col] = df[col].apply(lambda x: aes_decrypt(x, cle_chiffrement, mode_chiffrement, iv=vecteur if mode_chiffrement == 'CBC' else None))
 
 #Enregistrer le fichier Excel déchiffré
