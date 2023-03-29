@@ -18,3 +18,4 @@ Le script crypt.py lit le fichier Excel en entrée et applique la fonction de ch
 
 ## Conclusion:
 Le chiffrement de fichiers est un processus important pour protéger la confidentialité des informations sensibles. Ce projet montre comment utiliser le chiffrement AES pour crypter et décrypter les données d'un fichier Excel à l'aide du module Cryptodome en Python. En appliquant les méthodes de chiffrement et de déchiffrement aux données sensibles, les utilisateurs peuvent s'assurer que leurs données sont en sécurité et protégées contre tout accès non autorisé.
+
