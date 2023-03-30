@@ -1,4 +1,7 @@
 import configparser
+import csv
+import json
+import os
 import sys
 import time
 from annony import aes_encrypt , aes_decrypt, sha256_hash
@@ -12,6 +15,7 @@ config.read('configuration.conf')
 # Opération à effectuer
 operation = config['Operations']['operation']
 
+type=config['Operations']['filetype']
 
 # Mode de chiffrement (ECB ou CBC)
 mode_chiffrement = config['Operations']['mode_chiffrement']
@@ -29,7 +33,9 @@ vecteur = config['Operations']['vector']
 
 # Charger le fichier Excel dans un dataframe Pandas
 fichier_entree = config['fileinfo']['fichier_entree']
-df = pd.read_excel(fichier_entree)
+
+# Charger le fichier Excel dans un dataframe Pandas
+fichier_sortie = config['fileinfo']['fichier_sortie']
 
 # Vérifier si la clé a la bonne taille
 if len(cle_chiffrement) != 16:
@@ -47,26 +53,75 @@ if mode_chiffrement == 'CBC' and len(vecteur) != 16:
     exit()
 
 
+def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement, mode_chiffrement, colonnes=None, iv=None):
 
-# Appliquer la fonction de decryptage à chaque colonne choisie
-if colonnes:
-    colonnes = colonnes.split(',')
-else:
-    colonnes = df.columns.tolist()
-for col in colonnes:
-    if operation == 'chiffrement':
-        df[col] = df[col].apply(lambda x: aes_encrypt(x, cle_chiffrement, mode_chiffrement,iv=vecteur if mode_chiffrement == 'CBC' else None))
-    elif operation == 'dechiffrement':
-        df[col] = df[col].apply(lambda x: aes_decrypt(x, cle_chiffrement, mode_chiffrement,iv=vecteur if mode_chiffrement == 'CBC' else None))
-    elif operation == 'hashage':
-        df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
+    # vérifier l'extension et exécuter le traitement approprié
+    if file_extension in ['csv', 'txt']:
+        # ouvrir le fichier et lire chaque ligne
+        with open(fichier_entree, 'r') as file:
+            lines = []
+            for line in file:
+                # appliquer l'opération sur chaque ligne
+                if operation == 'chiffrement':
+                    line = aes_encrypt(line.strip(), cle_chiffrement, mode_chiffrement, iv=None)
+                elif operation == 'dechiffrement':
+                    line = aes_decrypt(line.strip(), cle_chiffrement, mode_chiffrement, iv=None)
+                elif operation == 'hashage':
+                    line = sha256_hash(line.strip())
+                else:
+                    print("Opération non reconnue.")
+                    sys.exit(1)
+                lines.append(line)
+
+        # écrire les lignes modifiées dans un nouveau fichier
+        with open(fichier_sortie, 'w') as encrypted_file:
+            for line in lines:
+                encrypted_file.write(line + '\n')
+
+    elif file_extension == 'json':
+        # ouvrir le fichier json et charger le contenu en un dictionnaire
+        with open(fichier_entree, 'r') as json_file:
+            json_dict = json.load(json_file)
+
+        # appliquer l'opération sur chaque valeur de chaque clé spécifiée
+        for key in json_dict:
+            if colonnes is None or key in colonnes:
+                if operation == 'chiffrement':
+                    json_dict[key] = aes_encrypt(json_dict[key], cle_chiffrement, mode_chiffrement, iv)
+                elif operation == 'dechiffrement':
+                    json_dict[key] = aes_decrypt(json_dict[key], cle_chiffrement, mode_chiffrement, iv)
+                elif operation == 'hashage':
+                    json_dict[key] = sha256_hash(json_dict[key])
+                else:
+                    print("Opération non reconnue.")
+                    sys.exit(1)
+
+        # écrire le dictionnaire modifié dans un nouveau fichier json
+        with open(fichier_sortie, 'w') as f:
+            json.dump(json_dict, f)
+
+    elif file_extension == 'xlsx':
+        df = pd.read_excel(fichier_entree, engine='openpyxl')
+
+        # Appliquer la fonction de decryptage à chaque colonne spécifiée
+        if colonnes:
+            for col in colonnes:
+                if operation == 'chiffrement':
+                    df[col] = df[col].apply(lambda x: aes_encrypt(str(x), cle_chiffrement, mode_chiffrement, iv))
+                elif operation == 'dechiffrement':
+                    df[col] = df[col].apply(lambda x: aes_decrypt(str(x), cle_chiffrement, mode_chiffrement, iv))
+                elif operation == 'hashage':
+                    df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
+
+        # écrire le dataframe modifié dans un nouveau fichier excel
+        df.to_excel(fichier_sortie, index=False)
+
     else:
-        print("Opération non reconnue.")
+        print("Type de fichier non reconnu.")
         sys.exit(1)
 
-# Enregistrer le fichier Excel hashé
-fichier_sortie = config['fileinfo']['fichier_sortie']
-df.to_excel(fichier_sortie, index=False)
+
+encrypt_file(type,fichier_entree,fichier_sortie,cle_chiffrement,mode_chiffrement,colonnes,vecteur)
 
 
 end=time.time()
