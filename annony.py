@@ -4,7 +4,7 @@ from Cryptodome.Util.Padding import pad, unpad
 
 
 # Définir une fonction pour crypter les valeurs d'une colonne avec AES en mode CBC ou ECB
-def aes_encrypt(value, key, mode_chiffrement, iv=None):
+def aes_encrypt(value, key, mode_chiffrement=None, iv=None):
     if mode_chiffrement == 'CBC' and iv is None:
         raise ValueError("Le vecteur d'initialisation doit être spécifié pour le mode CBC.")
     if mode_chiffrement == 'CBC':
@@ -17,12 +17,18 @@ def aes_encrypt(value, key, mode_chiffrement, iv=None):
         padded_value = pad(str(value).encode(), AES.block_size)
     elif isinstance(value, float):
         padded_value = pad(str(value).encode(), AES.block_size)
+    elif isinstance(value,bytes):
+        padded_value = pad(value, AES.block_size)
+    elif isinstance(value,bytearray ):
+        padded_value = pad(bytes(value), AES.block_size)
+    elif isinstance(value, memoryview):
+        padded_value = pad(bytes(value), AES.block_size)
     else:
         raise ValueError("Type de données non pris en charge.")
     encrypted_value = cipher.encrypt(padded_value)
     return encrypted_value.hex()
 # Define decryption function
-def aes_decrypt(value, key, mode_chiffrement, iv=None):
+def aes_decrypt(value, key, mode_chiffrement=None, iv=None):
     if mode_chiffrement == 'CBC' and iv is None:
         raise ValueError("Le vecteur d'initialisation doit être spécifié pour le mode CBC.")
     if mode_chiffrement == 'ECB' and iv is not None:
