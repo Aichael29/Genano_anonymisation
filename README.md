@@ -13,11 +13,11 @@ télécharger le projet : https://github.com/Aichael29/projetD-anonymisation_Inw
 ### Utilisation
 Ce projet permet de chiffrer, déchiffrer et hasher des fichiers Excel en utilisant l'algorithme AES. Vous pouvez l'utiliser en suivant ces étapes :
 
-Choisir votre fichier Excel à chiffrer ou déchiffrer ou hasher.
-Accéder au fichier de conf dans le projet téléchargé.
-Modifiez le fichier de configuration (nommé configuration.conf), qui contient les informations nécessaires pour effectuer l'opération de chiffrement ou de dechiffrement ou hashage .
-Suivez les instructions à l'écran pour chiffrer ou déchiffrer votre fichier.
-Lancez le script pour obtenir l'output : python main.py.
+* Choisir votre fichier Excel à chiffrer ou déchiffrer ou hasher.
+* Accéder au fichier de conf dans le projet téléchargé.
+* Modifiez le fichier de configuration (nommé configuration.conf), qui contient les informations nécessaires pour effectuer l'opération de chiffrement ou de dechiffrement ou hashage .
+* Suivez les instructions à l'écran pour chiffrer ou déchiffrer votre fichier.
+* Lancez le script pour obtenir l'output : python main.py.
 
 
  
