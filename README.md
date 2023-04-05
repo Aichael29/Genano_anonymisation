@@ -7,8 +7,8 @@ télécharger le projet : https://github.com/Aichael29/projetD-anonymisation_Inw
 1. Accédez au répertoire du projet via console : cd 'le chemin de projet téléchargé'.
 2. Installez les dépendances du projet : pip install -r requirements.txt.
 3. Cyptodome : pip install pycryptodomex.
-4.pandas : pip install pandas.
-5.openpyxl : pip install openpyxl.
+4. pandas : pip install pandas.
+5. openpyxl : pip install openpyxl.
 
 ### Utilisation
 Ce projet permet de chiffrer, déchiffrer et hasher des fichiers Excel en utilisant l'algorithme AES. Vous pouvez l'utiliser en suivant ces étapes :
