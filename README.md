@@ -2,7 +2,7 @@
 
 ## Ce projet a été créé pour l'entreprise INWI
 
-Installation
+### Installation:
 télécharger le projet : https://github.com/Aichael29/projetD-anonymisation_Inwi.git.
 1. Accédez au répertoire du projet via console : cd 'le chemin de projet téléchargé'.
 2. Installez les dépendances du projet : pip install -r requirements.txt.
