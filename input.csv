@@ -1,0 +1,12 @@
+ID,numclient,product,city,numcommande,adresse,age,qte,montant,status,timestampfield,phonenumber,registred,shoptype
+1,7178,forfait99,nador,15479,alia,52,153,853.465607,paid,2021-10-13_02:12:30,2.12648E+11,no,physicalstore
+2,4376,carteprepaid,mohammedia,48095,chemin des Dahlias ang,43,153,996.5565352,paid,2020-11-05_14:59:03,2.12695E+11,no,other
+3,2286,carteprepaid,fes,21246,khalifa,45,34,976.9857482,paid,2021-01-05_12:18:47,2.12728E+11,no,webstore
+4,2242,carteprepaid,tanger,10329,sidi maarouf,29,76,709.2358313,paid,2022-04-18_08:34:58,2.12654E+11,yes,physicalstore
+5,1486,carteprepaid,marrakech,21141,Rte ElAounat,68,187,349.7061544,paid,2022-05-11_01:15:26,2.12784E+11,no,physicalstore
+6,5618,carteprepaid,casa,33440,place des Nations Unies,32,56,676.1275464,paid,2020-12-09_08:49:57,2.12724E+11,no,other
+7,7420,carteprepaid,tanger,14602,elbasma,62,125,218.4540838,unpaid,2021-04-20_18:46:02,2.12605E+11,no,physicalstore
+8,4800,idar,tanger,43012,elbasma,40,60,872.6663245,unpaid,2022-08-31_17:18:51,2.12781E+11,no,webstore
+9,5880,forfait99,mohammedia,49557,bd Mohammed V,33,198,814.2265737,paid,2021-01-23_01:49:41,2.12624E+11,yes,physicalstore
+10,4734,carteprepaid,fes,27984,av. Slaoui,58,199,900.0429454,unpaid,2022-01-01_16:56:56,2.12743E+11,yes,other
+11,76,idar,rabat,25558,horia,20,81,659.0841586,paid,2021-04-28_15:05:53,2.12669E+11,no,other
