@@ -35,6 +35,10 @@ fichier_entree = config['fileinfo']['fichier_entree']
 # Charger le fichier Excel dans un dataframe Pandas
 fichier_sortie = config['fileinfo']['fichier_sortie']
 
+delimiter=config['Operations'].get('delimiter', None)
+if delimiter is None:
+    delimiter = ','
+
 type=os.path.splitext(fichier_entree)[1].lower()
 
 # Vérifier si la clé a la bonne taille
@@ -53,7 +57,7 @@ if mode_chiffrement == 'CBC' and len(vecteur) != 16:
     exit()
 
 
-def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement, mode_chiffrement, iv=None, colonnes=None):
+def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement, mode_chiffrement, iv=None, colonnes=None,delimiter=None):
 
     # vérifier l'extension et exécuter le traitement approprié
     if file_extension in ['.txt','.html','.docx']:
@@ -98,7 +102,7 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement
         df.to_xml(fichier_sortie, root_name='root', row_name='row', index=False)
 
     elif file_extension == '.csv':
-        df = pd.read_csv(fichier_entree)
+        df = pd.read_csv(fichier_entree,sep=delimiter)
         # Appliquer la fonction de decryptage à chaque colonne spécifiée
         if colonnes:
             colonnes = colonnes.split(',')
@@ -113,7 +117,7 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement
                 elif operation == 'hashage':
                     df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
         # écrire le dataframe modifié dans un nouveau fichier excel
-        df.to_csv(fichier_sortie, index=False)
+        df.to_csv(fichier_sortie, index=False,sep=delimiter)
 
     elif file_extension == '.json':
         # Charger le fichier JSON en un dataframe pandas
@@ -161,8 +165,8 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement
                     sys.exit(1)
 
 
-encrypt_file(type,fichier_entree,fichier_sortie,cle_chiffrement,mode_chiffrement,vecteur,colonnes)
+encrypt_file(type,fichier_entree,fichier_sortie,cle_chiffrement,mode_chiffrement,vecteur,colonnes,delimiter)
 
 
 end=time.time()
-print("xlsx généré en " + str(end - start) + " secondes")
+print("généré en " + str(end - start) + " secondes")
