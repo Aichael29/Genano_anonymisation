@@ -35,7 +35,7 @@ fichier_entree = config['fileinfo']['fichier_entree']
 # Charger le fichier Excel dans un dataframe Pandas
 fichier_sortie = config['fileinfo']['fichier_sortie']
 
-delimiter=config['Operations'].get('delimiter', None)
+delimiter=config['Operations'].get('separateur', None)
 if delimiter is None:
     delimiter = ','
 
