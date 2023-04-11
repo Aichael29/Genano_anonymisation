@@ -2,8 +2,16 @@ import configparser
 import os
 import time
 from annony import *
+import psutil
 
+
+# Obtenir l'utilisation de la mémoire avant l'exécution du code
+memory_before = psutil.virtual_memory().used
+
+# Obtenir l'utilisation de la CPU avant l'exécution du code
+cpu_before = psutil.cpu_percent()
 start=time.time()
+
 # Lecture du fichier de configuration
 config = configparser.ConfigParser()
 config.read('configuration.conf')
@@ -11,8 +19,9 @@ config.read('configuration.conf')
 # Opération à effectuer
 operation = config['Operations']['operation']
 sep =config['Operations'].get('separateur', None)
-if sep is None:
+"""if sep is None:
    sep = ","
+print(sep)"""
 
 # Mode de chiffrement (ECB ou CBC)
 mode_chiffrement = config['Operations']['mode_chiffrement']
@@ -57,4 +66,18 @@ encrypt_file(type,fichier_entree,fichier_sortie, operation, cle_chiffrement,mode
 
 
 end=time.time()
+# Obtenir l'utilisation de la CPU après l'exécution du code
+cpu_after = psutil.cpu_percent()
+
+# Obtenir l'utilisation de la mémoire après l'exécution du code
+memory_after = psutil.virtual_memory().used
+
+# Calculer la différence d'utilisation de la mémoire
+memory_diff = (memory_after - memory_before) / 1000000000
+
+
+# Afficher les résultats
+print("Utilisation de la CPU avant l'exécution du code :", cpu_before, "%")
+print("Utilisation de la CPU après l'exécution du code :", cpu_after, "%")
+print("Différence d'utilisation de la mémoire :", memory_diff, "Go")
 print("le fichier est généré en " + str(end - start) + " secondes")
