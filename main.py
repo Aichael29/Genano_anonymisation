@@ -1,6 +1,7 @@
 import configparser
 import json
 import os
+import random
 import sys
 import time
 from annony import aes_encrypt , aes_decrypt, sha256_hash
@@ -112,6 +113,12 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement
                     df[col] = df[col].apply(lambda x: aes_decrypt(str(x), cle_chiffrement, mode_chiffrement, iv=vecteur if mode_chiffrement == 'CBC' else None))
                 elif operation == 'hashage':
                     df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
+                elif operation == 'melange':
+                    unique_values = df[col].unique().tolist()  # obtenir les valeurs uniques dans tout les lignes de la colonne
+                    random.shuffle(unique_values)  # mélanger aléatoirement les valeurs
+                    dict_valeurs = {ancienne_valeur: nouvelle_valeur for ancienne_valeur, nouvelle_valeur in zip(df[col].unique(), unique_values)}
+                    df[col] = df[col].replace(dict_valeurs)  # remplacer les occurrences dans la colonne
+
         # écrire le dataframe modifié dans un nouveau fichier excel
         df.to_csv(fichier_sortie, index=False)
 
