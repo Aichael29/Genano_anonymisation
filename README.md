@@ -1,4 +1,4 @@
-# ANNONYMISATION
+# ANONYMISATION
 
 ## Ce projet a été créé pour l'entreprise INWI
 
