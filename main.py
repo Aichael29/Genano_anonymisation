@@ -114,10 +114,13 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement
                 elif operation == 'hashage':
                     df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
                 elif operation == 'melange':
-                    unique_values = df[col].unique().tolist()  # obtenir les valeurs uniques dans tout les lignes de la colonne
-                    random.shuffle(unique_values)  # mélanger aléatoirement les valeurs
+                    unique_values = df[col].unique().tolist()
+                    random.shuffle(unique_values)
+                    # vérifier que les nv vals ne sont pas identiques aux anciennes vals
+                    while any(x == y for x, y in zip(df[col].unique(), unique_values)):
+                        random.shuffle(unique_values)
                     dict_valeurs = {ancienne_valeur: nouvelle_valeur for ancienne_valeur, nouvelle_valeur in zip(df[col].unique(), unique_values)}
-                    df[col] = df[col].replace(dict_valeurs)  # remplacer les occurrences dans la colonne
+                    df[col] = df[col].replace(dict_valeurs)
 
         # écrire le dataframe modifié dans un nouveau fichier excel
         df.to_csv(fichier_sortie, index=False)
