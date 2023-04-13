@@ -36,7 +36,7 @@ fichier_entree = config['fileinfo']['fichier_entree']
 # Charger le fichier Excel dans un dataframe Pandas
 fichier_sortie = config['fileinfo']['fichier_sortie']
 
-type=os.path.splitext(fichier_entree)[1].lower()
+type = os.path.splitext(fichier_entree)[1].lower()
 
 # Vérifier si la clé a la bonne taille
 if len(cle_chiffrement) != 16:
@@ -163,6 +163,15 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement
                     df[col] = df[col].apply(lambda x: aes_decrypt(str(x), cle_chiffrement, mode_chiffrement, iv=vecteur if mode_chiffrement == 'CBC' else None))
                 elif operation == 'hashage':
                     df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
+                elif operation == 'random':
+                    unique_values = df[col].unique().tolist()
+                    random.shuffle(unique_values)
+                    # vérifier que les nv vals ne sont pas identiques aux anciennes vals
+                    while any(x == y for x, y in zip(df[col].unique(), unique_values)):
+                        random.shuffle(unique_values)
+                    dict_valeurs = {ancienne_valeur: nouvelle_valeur for ancienne_valeur, nouvelle_valeur in zip(df[col].unique(), unique_values)}
+                    df[col] = df[col].replace(dict_valeurs)
+
         # écrire le dataframe modifié dans un nouveau fichier excel
         df.to_excel(fichier_sortie, index=False)
 
