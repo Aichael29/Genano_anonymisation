@@ -1,4 +1,5 @@
 import configparser
+import csv
 import os
 import threading
 import time
@@ -59,10 +60,27 @@ if mode_chiffrement not in ('ECB', 'CBC'):
 if mode_chiffrement == 'CBC' and len(vecteur) != 16:
     print("Le vecteur d'initialisation doit être de 16 octets.")
     exit()
+if type == '.csv':
+    with open(fichier_entree, mode='r') as input_file:
+        reader = csv.reader(input_file, delimiter=sep)
+        rows = list(reader)
+    print(rows)
+        # Split the rows into sections, one for each process
+    section_size = len(rows) // 4
+    sections = [rows[i:i+section_size] for i in range(0, len(rows), section_size)]
+    print(sections)
+    threads = []
+    for i in range(5):
+        t = threading.Thread(target=encrypt_file, args=(type, fichier_entree, fichier_sortie, operation, cle_chiffrement, mode_chiffrement, vecteur, colonnes, sep))
+        print("threads"+str(i)+"start")
+        t.start()
+        threads.append(t)
+    for t in threads:
+        t.join()
+    print("Tous les threads sont terminés")
 
-encrypt_file(type,fichier_entree,fichier_sortie, operation, cle_chiffrement,mode_chiffrement,vecteur,colonnes,sep)
-
-#print(nb_threads)
+else:
+    encrypt_file(type, fichier_entree, fichier_sortie, operation, cle_chiffrement, mode_chiffrement, vecteur, colonnes,sep)
 end=time.time()
 # Obtenir l'utilisation de la CPU après l'exécution du code
 cpu_after = psutil.cpu_percent()
@@ -79,4 +97,4 @@ print("Utilisation de la CPU avant l'exécution du code :", cpu_before, "%")
 print("Utilisation de la CPU après l'exécution du code :", cpu_after, "%")
 print("Différence d'utilisation de la mémoire :", memory_diff, "Go")
 print("le fichier est généré en " + str(end - start) + " secondes")
-print("le fichier est généré en " + str((end - start)/60) + " secondes")
+print("le fichier est généré en " + str(end - start) + " minutes")
