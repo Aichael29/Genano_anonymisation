@@ -1,11 +1,10 @@
 import configparser
-import csv
 import os
 import threading
 import time
 from annony import *
 import psutil
-
+import multiprocessing
 
 # Obtenir l'utilisation de la mémoire avant l'exécution du code
 memory_before = psutil.virtual_memory().used
@@ -61,39 +60,44 @@ if mode_chiffrement == 'CBC' and len(vecteur) != 16:
     print("Le vecteur d'initialisation doit être de 16 octets.")
     exit()
 
-if type == ".csv":
-    with open(fichier_entree, mode='r') as input_file:
-        reader = csv.reader(input_file, delimiter=sep)
-        rows = list(reader)
-    print(rows)
-    # Split the rows into sections, one for each process
-    section_size = len(rows) // 4
-    sections = [rows[i:i+section_size] for i in range(0, len(rows), section_size)]
-    print(sections)
-threads = []
-for i in range(5):
-    t = threading.Thread(target=encrypt_file, args=(type, fichier_entree, fichier_sortie, operation, cle_chiffrement, mode_chiffrement, vecteur, colonnes, sep))
-    print("threads"+str(i)+"start")
-    t.start()
-    threads.append(t)
-for t in threads:
-    t.join()
-print("Tous les threads sont terminés")
-
-end=time.time()
-# Obtenir l'utilisation de la CPU après l'exécution du code
-cpu_after = psutil.cpu_percent()
-
-# Obtenir l'utilisation de la mémoire après l'exécution du code
-memory_after = psutil.virtual_memory().used
-
-# Calculer la différence d'utilisation de la mémoire
-memory_diff = (memory_after - memory_before) / 1000000000
 
 
-# Afficher les résultats
-print("Utilisation de la CPU avant l'exécution du code :", cpu_before, "%")
-print("Utilisation de la CPU après l'exécution du code :", cpu_after, "%")
-print("Différence d'utilisation de la mémoire :", memory_diff, "Go")
-print("le fichier est généré en " + str(end - start) + " secondes")
-print("le fichier est généré en " + str((end - start)/60) + "minutes")
+if __name__ == '__main__':
+    # créer une liste de processus
+    processes = []
+
+    i = 0
+    # créer et lancer jusqu'à 4 processus
+    while i < 4:
+        p = multiprocessing.Process(target=encrypt_file, args=(type, fichier_entree, fichier_sortie, operation, cle_chiffrement, mode_chiffrement, vecteur, colonnes, sep))
+        p.start()
+        processes.append(p)
+        print("process"+str(i)+"au cours d'execution")
+        i += 1
+
+    print(processes)
+    # attendre que tous les processus se terminent
+    for p in processes:
+        print("attendre que  le processus " + str(p) + "se termine")
+        p.join()
+
+    print("Tous les processus sont terminés")
+    #encrypt_file(type,fichier_entree,fichier_sortie, operation, cle_chiffrement,mode_chiffrement,vecteur,colonnes,sep)
+
+    #print(nb_threads)
+
+    end = time.time()
+    # Obtenir l'utilisation de la CPU après l'exécution du code
+    cpu_after = psutil.cpu_percent()
+
+    # Obtenir l'utilisation de la mémoire après l'exécution du code
+    memory_after = psutil.virtual_memory().used
+
+    # Calculer la différence d'utilisation de la mémoire
+    memory_diff = (memory_after - memory_before) / 1000000000
+        # Afficher les résultats
+    print("Utilisation de la CPU avant l'exécution du code :", cpu_before, "%")
+    print("Utilisation de la CPU après l'exécution du code :", cpu_after, "%")
+    print("Différence d'utilisation de la mémoire :", memory_diff, "Go")
+    print("le fichier est généré en " + str(end - start) + " secondes")
+    print("le fichier est généré en " + str((end - start)/60) + " minutes")
