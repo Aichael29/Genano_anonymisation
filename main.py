@@ -1,5 +1,6 @@
 import configparser
 import os
+import threading
 import time
 from annony import *
 import psutil
@@ -18,10 +19,9 @@ config.read('configuration.conf')
 
 # Opération à effectuer
 operation = config['Operations']['operation']
-sep =config['Operations'].get('separateur', None)
-"""if sep is None:
-   sep = ","
-print(sep)"""
+sep = config['Operations'].get('separateur', None)
+if sep is None or len(sep) == 0:
+    sep = ','
 
 # Mode de chiffrement (ECB ou CBC)
 mode_chiffrement = config['Operations']['mode_chiffrement']
@@ -60,11 +60,9 @@ if mode_chiffrement == 'CBC' and len(vecteur) != 16:
     print("Le vecteur d'initialisation doit être de 16 octets.")
     exit()
 
-
-
 encrypt_file(type,fichier_entree,fichier_sortie, operation, cle_chiffrement,mode_chiffrement,vecteur,colonnes,sep)
 
-
+#print(nb_threads)
 end=time.time()
 # Obtenir l'utilisation de la CPU après l'exécution du code
 cpu_after = psutil.cpu_percent()
@@ -81,3 +79,4 @@ print("Utilisation de la CPU avant l'exécution du code :", cpu_before, "%")
 print("Utilisation de la CPU après l'exécution du code :", cpu_after, "%")
 print("Différence d'utilisation de la mémoire :", memory_diff, "Go")
 print("le fichier est généré en " + str(end - start) + " secondes")
+print("le fichier est généré en " + str((end - start)/60) + " secondes")

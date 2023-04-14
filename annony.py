@@ -63,7 +63,7 @@ def sha256_hash(value):
         return value_hash.hexdigest()
     else:
         return hashlib.sha256(str(value).encode()).hexdigest()
-def encrypt_file(file_extension, fichier_entree, fichier_sortie ,operation,cle_chiffrement, mode_chiffrement,vecteur, colonnes=None,separateur=None):
+def encrypt_file(file_extension, fichier_entree, fichier_sortie ,operation,cle_chiffrement, mode_chiffrement,vecteur, colonnes=None,separateur=None,section=None):
 
     # vérifier l'extension et exécuter le traitement approprié
     if file_extension in ['.txt','.html','.docx']:
@@ -109,6 +109,7 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,operation,cle_c
 
     elif file_extension == '.csv':
         df = pd.read_csv(fichier_entree,sep=separateur)
+        print("azertyuio")
         # Appliquer la fonction de decryptage à chaque colonne spécifiée
         if colonnes:
             colonnes = colonnes.split(',')
@@ -122,6 +123,7 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,operation,cle_c
                     df[col] = df[col].apply(lambda x: aes_decrypt(str(x), cle_chiffrement, mode_chiffrement, iv=vecteur if mode_chiffrement == 'CBC' else None))
                 elif operation == 'hashage':
                     df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
+        section = df.to_csv(index=False, header=False, sep=separateur).split('\n')[:-1]
         # écrire le dataframe modifié dans un nouveau fichier excel
         df.to_csv(fichier_sortie, index=False,sep=separateur)
 
@@ -169,4 +171,3 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,operation,cle_c
     else:
                     print("Opération non reconnue.")
                     sys.exit(1)
-
