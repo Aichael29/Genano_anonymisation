@@ -60,27 +60,26 @@ if mode_chiffrement not in ('ECB', 'CBC'):
 if mode_chiffrement == 'CBC' and len(vecteur) != 16:
     print("Le vecteur d'initialisation doit être de 16 octets.")
     exit()
-if type == '.csv':
+
+if type == ".csv":
     with open(fichier_entree, mode='r') as input_file:
         reader = csv.reader(input_file, delimiter=sep)
         rows = list(reader)
     print(rows)
-        # Split the rows into sections, one for each process
+    # Split the rows into sections, one for each process
     section_size = len(rows) // 4
     sections = [rows[i:i+section_size] for i in range(0, len(rows), section_size)]
     print(sections)
-    threads = []
-    for i in range(5):
-        t = threading.Thread(target=encrypt_file, args=(type, fichier_entree, fichier_sortie, operation, cle_chiffrement, mode_chiffrement, vecteur, colonnes, sep))
-        print("threads"+str(i)+"start")
-        t.start()
-        threads.append(t)
-    for t in threads:
-        t.join()
-    print("Tous les threads sont terminés")
+threads = []
+for i in range(5):
+    t = threading.Thread(target=encrypt_file, args=(type, fichier_entree, fichier_sortie, operation, cle_chiffrement, mode_chiffrement, vecteur, colonnes, sep))
+    print("threads"+str(i)+"start")
+    t.start()
+    threads.append(t)
+for t in threads:
+    t.join()
+print("Tous les threads sont terminés")
 
-else:
-    encrypt_file(type, fichier_entree, fichier_sortie, operation, cle_chiffrement, mode_chiffrement, vecteur, colonnes,sep)
 end=time.time()
 # Obtenir l'utilisation de la CPU après l'exécution du code
 cpu_after = psutil.cpu_percent()
