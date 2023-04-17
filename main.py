@@ -113,7 +113,7 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement
                     df[col] = df[col].apply(lambda x: aes_decrypt(str(x), cle_chiffrement, mode_chiffrement, iv=vecteur if mode_chiffrement == 'CBC' else None))
                 elif operation == 'hashage':
                     df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
-                elif operation == 'random':
+                elif operation == 'pseudonymisation':
                     unique_values = df[col].unique().tolist()
                     random.shuffle(unique_values)
                     # vérifier que les nv vals ne sont pas identiques aux anciennes vals
@@ -163,7 +163,7 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement
                     df[col] = df[col].apply(lambda x: aes_decrypt(str(x), cle_chiffrement, mode_chiffrement, iv=vecteur if mode_chiffrement == 'CBC' else None))
                 elif operation == 'hashage':
                     df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
-                elif operation == 'random':
+                elif operation == 'pseudonymisation':
                     unique_values = df[col].unique().tolist()
                     random.shuffle(unique_values)
                     # vérifier que les nv vals ne sont pas identiques aux anciennes vals
