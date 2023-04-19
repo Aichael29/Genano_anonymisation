@@ -29,4 +29,13 @@ Le code fourni est un script Python permettant de chiffrer, déchiffrer, hasher 
 ### Conclusion
 
 Dans l'ensemble, le script Python fourni offre des fonctionnalités utiles pour protéger les données sensibles. Cependant, il peut être amélioré en ajoutant des fonctionnalités de validation et de vérification des entrées utilisateur. De plus, la documentation des fonctions est insuffisante, ce qui peut rendre difficile la compréhension et l'utilisation du code pour les développeurs qui ne sont pas familiers avec celui-ci.
- 
+
+### Test:
+Information systeme :
+*    Systéme d'exploitation : Windows 10 Professionnel 64 bits (10.0, build 19045)
+*    Fabricant du systéme : HP
+*    Modele du systéme : HP EliteBook 820 G3
+*    Processeur : Intel(R) Core(TM) i5-6200 CPU @ 2.30GHz (4 CPUS), ~2.4GHz
+*    Mémoire : 8192M8 RAM
+
+![image.png](image.png)
