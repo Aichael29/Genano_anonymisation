@@ -1,6 +1,5 @@
 import hashlib
 import random
-
 from Cryptodome.Cipher import AES
 from Cryptodome.Util.Padding import pad, unpad
 import json
@@ -31,6 +30,7 @@ def aes_encrypt(value, key, mode_chiffrement, iv=None):
     return encrypted_value.hex()
 
 # Définir une fonction pour décrypter les valeurs d'une colonne avec AES en mode CBC ou ECB
+
 def aes_decrypt(value, key, mode_chiffrement, iv=None):
     if mode_chiffrement == 'CBC' and iv is None:
         raise ValueError("Le vecteur d'initialisation doit être spécifié pour le mode CBC.")
@@ -40,6 +40,7 @@ def aes_decrypt(value, key, mode_chiffrement, iv=None):
         cipher = AES.new(key.encode(), AES.MODE_CBC, iv.encode('utf-8'))
     else:
         cipher = AES.new(key.encode(), AES.MODE_ECB)
+
     decrypted_value = cipher.decrypt(bytes.fromhex(value))
     return unpad(decrypted_value, AES.block_size).decode()
 
@@ -71,11 +72,6 @@ def anonymisation(values):
     while any(x == y for x, y in zip(values.unique(), unique_values)):
         random.shuffle(unique_values)
     dict_valeurs = {ancienne_valeur: nouvelle_valeur for ancienne_valeur, nouvelle_valeur in zip(values.unique(), unique_values)}
-    return values.replace(dict_valeurs)
-
-
-def deanonymisation(values):
-    global dict_valeurs
     return values.replace(dict_valeurs)
 
 
