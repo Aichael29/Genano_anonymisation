@@ -4,57 +4,39 @@ import os
 import random
 import sys
 import time
-from annony import aes_encrypt , aes_decrypt, sha256_hash
+from annony import aes_encrypt, aes_decrypt, sha256_hash, anonymisation
 import pandas as pd
 
 start=time.time()
-# Lecture du fichier de configuration
 config = configparser.ConfigParser()
 config.read('configuration.conf')
 
-# Opération à effectuer
+fichier_entree = config['fileinfo']['fichier_entree']
+fichier_sortie = config['fileinfo']['fichier_sortie']
+type = os.path.splitext(fichier_entree)[1].lower()
 operation = config['Operations']['operation']
-
-
-# Mode de chiffrement (ECB ou CBC)
-mode_chiffrement = config['Operations']['mode_chiffrement']
-
-# Colonnes à crypter
 colonnes = config['Operations'].get('colonnes', None)
 if colonnes is None:
     colonnes = []
 
-# Clé de chiffrement
-cle_chiffrement = config['Operations']['cle_chiffrement']
 
-# Vecteur d'initialisation
-vecteur = config['Operations']['vector']
-
-# Charger le fichier Excel dans un dataframe Pandas
-fichier_entree = config['fileinfo']['fichier_entree']
-
-# Charger le fichier Excel dans un dataframe Pandas
-fichier_sortie = config['fileinfo']['fichier_sortie']
-
-type = os.path.splitext(fichier_entree)[1].lower()
-
-# Vérifier si la clé a la bonne taille
-if len(cle_chiffrement) != 16:
-    print("La clé doit être de 16 caractères.")
-    exit()
-
-# Vérifier si le mode de chiffrement est valide
-if mode_chiffrement not in ('ECB', 'CBC'):
-    print("Le mode de chiffrement doit être soit ECB ou CBC.")
-    exit()
-
-# Vérifier si le vecteur d'initialisation a la bonne taille
-if mode_chiffrement == 'CBC' and len(vecteur) != 16:
-    print("Le vecteur d'initialisation doit être de 16 octets.")
-    exit()
+if operation in ["chiffrement", "dechiffrement"]:
+    mode_chiffrement = config['Operations']['mode_chiffrement']
+    if mode_chiffrement not in ('ECB', 'CBC'):
+        print("Le mode de chiffrement doit être soit ECB ou CBC.")
+        exit()
+    cle_chiffrement = config['Operations']['cle_chiffrement']
+    if len(cle_chiffrement) != 16:
+        print("La clé doit être de 16 caractères.")
+        exit()
+    if mode_chiffrement == "CBC":
+        vecteur = config['Operations']['vector']
+        if mode_chiffrement == 'CBC' and len(vecteur) != 16:
+            print("Le vecteur d'initialisation doit être de 16 octets.")
+            exit()
 
 
-def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement, mode_chiffrement, iv=None, colonnes=None):
+def encrypt_file(file_extension, fichier_entree, fichier_sortie,colonnes=None):
 
     # vérifier l'extension et exécuter le traitement approprié
     if file_extension in ['.txt','.html','.docx']:
@@ -148,39 +130,36 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement
         with open(fichier_sortie, 'w') as f:
             json.dump(df_json, f, indent=4)
 
+
     elif file_extension == '.xlsx':
+
         df = pd.read_excel(fichier_entree, engine='openpyxl')
         # Appliquer la fonction de decryptage à chaque colonne spécifiée
         if colonnes:
             colonnes = colonnes.split(',')
         else:
             colonnes = df.columns.tolist()
-
         for col in colonnes:
-                if operation == 'chiffrement':
-                    df[col] = df[col].apply(lambda x: aes_encrypt(str(x), cle_chiffrement, mode_chiffrement, iv=vecteur if mode_chiffrement == 'CBC' else None))
-                elif operation == 'dechiffrement':
-                    df[col] = df[col].apply(lambda x: aes_decrypt(str(x), cle_chiffrement, mode_chiffrement, iv=vecteur if mode_chiffrement == 'CBC' else None))
-                elif operation == 'hashage':
-                    df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
-                elif operation == 'pseudonymisation':
-                    unique_values = df[col].unique().tolist()
-                    random.shuffle(unique_values)
-                    # vérifier que les nv vals ne sont pas identiques aux anciennes vals
-                    while any(x == y for x, y in zip(df[col].unique(), unique_values)):
-                        random.shuffle(unique_values)
-                    dict_valeurs = {ancienne_valeur: nouvelle_valeur for ancienne_valeur, nouvelle_valeur in zip(df[col].unique(), unique_values)}
-                    df[col] = df[col].replace(dict_valeurs)
+            if operation == 'chiffrement':
+                df[col] = df[col].apply(lambda x: aes_encrypt(str(x), cle_chiffrement, mode_chiffrement,
+                                                              iv=vecteur if mode_chiffrement == 'CBC' else None))
+            elif operation == 'dechiffrement':
+                df[col] = df[col].apply(lambda x: aes_decrypt(str(x), cle_chiffrement, mode_chiffrement,
+                                                              iv=vecteur if mode_chiffrement == 'CBC' else None))
+            elif operation == 'hashage':
+                df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
+            elif operation == 'anonymisation':
+                df[col] = anonymisation(df[col])
+            # écrire le dataframe modifié dans un nouveau fichier excel
+            df.to_excel(fichier_sortie, index=False)
 
-        # écrire le dataframe modifié dans un nouveau fichier excel
-        df.to_excel(fichier_sortie, index=False)
 
     else:
                     print("Opération non reconnue.")
                     sys.exit(1)
 
 
-encrypt_file(type,fichier_entree,fichier_sortie,cle_chiffrement,mode_chiffrement,vecteur,colonnes)
+encrypt_file(type,fichier_entree,fichier_sortie,colonnes)
 
 
 end=time.time()
