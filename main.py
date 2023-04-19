@@ -45,9 +45,8 @@ if operation in ["chiffrement", "dechiffrement"]:
             print("Le vecteur d'initialisation doit être de 16 octets.")
             exit()
 
-
-
 def encrypt_file(file_extension, fichier_entree, fichier_sortie,colonnes=None):
+
 
     # vérifier l'extension et exécuter le traitement approprié
     if file_extension in ['.txt','.html','.docx']:
@@ -93,6 +92,7 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie,colonnes=None):
 
     elif file_extension == '.csv':
         df = pd.read_csv(fichier_entree,sep=sep)
+
         # Appliquer la fonction de decryptage à chaque colonne spécifiée
         if colonnes:
             colonnes = colonnes.split(',')
@@ -110,7 +110,7 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie,colonnes=None):
                     df[col] = anonymisation(df[col])
 
         # écrire le dataframe modifié dans un nouveau fichier excel
-        df.to_csv(fichier_sortie, index=False)
+        df.to_csv(fichier_sortie, index=False,sep=delimiter)
 
     elif file_extension == '.json':
         # Charger le fichier JSON en un dataframe pandas
@@ -163,7 +163,6 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie,colonnes=None):
                     print("Opération non reconnue.")
                     sys.exit(1)
 
-
 encrypt_file(type,fichier_entree,fichier_sortie,colonnes)
 
 
@@ -183,3 +182,4 @@ print("Utilisation de la CPU avant l'exécution du code :", cpu_before, "%")
 print("Utilisation de la CPU après l'exécution du code :", cpu_after, "%")
 print("Différence d'utilisation de la mémoire :", memory_diff, "Go")
 print("le fichier est généré en " + str(end - start) + " secondes")
+

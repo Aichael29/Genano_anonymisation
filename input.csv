@@ -10,3 +10,4 @@ ID,numclient,product,city,numcommande,adresse,age,qte,montant,status,timestampfi
 9,5880,forfait99,mohammedia,49557,bd Mohammed V,33,198,814.2265737,paid,2021-01-23_01:49:41,2.12624E+11,yes,physicalstore
 10,4734,carteprepaid,fes,27984,av. Slaoui,58,199,900.0429454,unpaid,2022-01-01_16:56:56,2.12743E+11,yes,other
 11,76,idar,rabat,25558,horia,20,81,659.0841586,paid,2021-04-28_15:05:53,2.12669E+11,no,other
+

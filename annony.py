@@ -41,8 +41,10 @@ def aes_decrypt(value, key, mode_chiffrement, iv=None):
     else:
         cipher = AES.new(key.encode(), AES.MODE_ECB)
 
+
     decrypted_value = cipher.decrypt(bytes.fromhex(value))
     return unpad(decrypted_value, AES.block_size).decode()
+
 
 # Définir une fonction pour hasher les valeurs d'une colonne avec SHA256
 def sha256_hash(value):
@@ -73,7 +75,4 @@ def anonymisation(values):
         random.shuffle(unique_values)
     dict_valeurs = {ancienne_valeur: nouvelle_valeur for ancienne_valeur, nouvelle_valeur in zip(values.unique(), unique_values)}
     return values.replace(dict_valeurs)
-
-
-
 
