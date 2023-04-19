@@ -1,63 +1,52 @@
 import configparser
+import psutil
 import json
 import os
+import random
 import sys
 import time
-from annony import aes_encrypt , aes_decrypt, sha256_hash
+from annony import aes_encrypt, aes_decrypt, sha256_hash, anonymisation
 import pandas as pd
 
+
+# Obtenir l'utilisation de la mémoire avant l'exécution du code
+memory_before = psutil.virtual_memory().used
+
+# Obtenir l'utilisation de la CPU avant l'exécution du code
+cpu_before = psutil.cpu_percent()
 start=time.time()
-# Lecture du fichier de configuration
 config = configparser.ConfigParser()
 config.read('configuration.conf')
 
-# Opération à effectuer
+fichier_entree = config['fileinfo']['fichier_entree']
+fichier_sortie = config['fileinfo']['fichier_sortie']
+type = os.path.splitext(fichier_entree)[1].lower()
 operation = config['Operations']['operation']
-
-
-# Mode de chiffrement (ECB ou CBC)
-mode_chiffrement = config['Operations']['mode_chiffrement']
-
-# Colonnes à crypter
+sep =config['Operations'].get('separateur', None)
+if sep is None or len(sep)==0:
+   sep = ","
 colonnes = config['Operations'].get('colonnes', None)
 if colonnes is None:
     colonnes = []
 
-# Clé de chiffrement
-cle_chiffrement = config['Operations']['cle_chiffrement']
 
-# Vecteur d'initialisation
-vecteur = config['Operations']['vector']
+if operation in ["chiffrement", "dechiffrement"]:
+    mode_chiffrement = config['Operations']['mode_chiffrement']
+    if mode_chiffrement not in ('ECB', 'CBC'):
+        print("Le mode de chiffrement doit être soit ECB ou CBC.")
+        exit()
+    cle_chiffrement = config['Operations']['cle_chiffrement']
+    if len(cle_chiffrement) != 16:
+        print("La clé doit être de 16 caractères.")
+        exit()
+    if mode_chiffrement == "CBC":
+        vecteur = config['Operations']['vector']
+        if mode_chiffrement == 'CBC' and len(vecteur) != 16:
+            print("Le vecteur d'initialisation doit être de 16 octets.")
+            exit()
 
-# Charger le fichier Excel dans un dataframe Pandas
-fichier_entree = config['fileinfo']['fichier_entree']
+def encrypt_file(file_extension, fichier_entree, fichier_sortie,colonnes=None):
 
-# Charger le fichier Excel dans un dataframe Pandas
-fichier_sortie = config['fileinfo']['fichier_sortie']
-
-delimiter = config['Operations'].get('separateur', None)
-if delimiter is None or len(delimiter) == 0:
-    delimiter = ','
-
-type=os.path.splitext(fichier_entree)[1].lower()
-
-# Vérifier si la clé a la bonne taille
-if len(cle_chiffrement) != 16:
-    print("La clé doit être de 16 caractères.")
-    exit()
-
-# Vérifier si le mode de chiffrement est valide
-if mode_chiffrement not in ('ECB', 'CBC'):
-    print("Le mode de chiffrement doit être soit ECB ou CBC.")
-    exit()
-
-# Vérifier si le vecteur d'initialisation a la bonne taille
-if mode_chiffrement == 'CBC' and len(vecteur) != 16:
-    print("Le vecteur d'initialisation doit être de 16 octets.")
-    exit()
-
-
-def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement, mode_chiffrement, iv=None, colonnes=None,delimiter=None):
 
     # vérifier l'extension et exécuter le traitement approprié
     if file_extension in ['.txt','.html','.docx']:
@@ -102,7 +91,8 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement
         df.to_xml(fichier_sortie, root_name='root', row_name='row', index=False)
 
     elif file_extension == '.csv':
-        df = pd.read_csv(fichier_entree,sep=delimiter)
+        df = pd.read_csv(fichier_entree,sep=sep)
+
         # Appliquer la fonction de decryptage à chaque colonne spécifiée
         if colonnes:
             colonnes = colonnes.split(',')
@@ -116,6 +106,9 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement
                     df[col] = df[col].apply(lambda x: aes_decrypt(str(x), cle_chiffrement, mode_chiffrement, iv=vecteur if mode_chiffrement == 'CBC' else None))
                 elif operation == 'hashage':
                     df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
+                elif operation == 'anonymisation':
+                    df[col] = anonymisation(df[col])
+
         # écrire le dataframe modifié dans un nouveau fichier excel
         df.to_csv(fichier_sortie, index=False,sep=delimiter)
 
@@ -142,31 +135,51 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie ,cle_chiffrement
         with open(fichier_sortie, 'w') as f:
             json.dump(df_json, f, indent=4)
 
+
     elif file_extension == '.xlsx':
+
         df = pd.read_excel(fichier_entree, engine='openpyxl')
         # Appliquer la fonction de decryptage à chaque colonne spécifiée
         if colonnes:
             colonnes = colonnes.split(',')
         else:
             colonnes = df.columns.tolist()
-
         for col in colonnes:
-                if operation == 'chiffrement':
-                    df[col] = df[col].apply(lambda x: aes_encrypt(str(x), cle_chiffrement, mode_chiffrement, iv=vecteur if mode_chiffrement == 'CBC' else None))
-                elif operation == 'dechiffrement':
-                    df[col] = df[col].apply(lambda x: aes_decrypt(str(x), cle_chiffrement, mode_chiffrement, iv=vecteur if mode_chiffrement == 'CBC' else None))
-                elif operation == 'hashage':
-                    df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
-        # écrire le dataframe modifié dans un nouveau fichier excel
-        df.to_excel(fichier_sortie, index=False)
+            if operation == 'chiffrement':
+                df[col] = df[col].apply(lambda x: aes_encrypt(str(x), cle_chiffrement, mode_chiffrement,
+                                                              iv=vecteur if mode_chiffrement == 'CBC' else None))
+            elif operation == 'dechiffrement':
+                df[col] = df[col].apply(lambda x: aes_decrypt(str(x), cle_chiffrement, mode_chiffrement,
+                                                              iv=vecteur if mode_chiffrement == 'CBC' else None))
+            elif operation == 'hashage':
+                df[col] = df[col].apply(lambda x: sha256_hash(str(x)))
+            elif operation == 'anonymisation':
+                df[col] = anonymisation(df[col])
+            # écrire le dataframe modifié dans un nouveau fichier excel
+            df.to_excel(fichier_sortie, index=False)
+
 
     else:
                     print("Opération non reconnue.")
                     sys.exit(1)
 
-
-encrypt_file(type,fichier_entree,fichier_sortie,cle_chiffrement,mode_chiffrement,vecteur,colonnes,delimiter)
+encrypt_file(type,fichier_entree,fichier_sortie,colonnes)
 
 
 end=time.time()
-print("généré en " + str(end - start) + " secondes")
+# Obtenir l'utilisation de la CPU après l'exécution du code
+cpu_after = psutil.cpu_percent()
+
+# Obtenir l'utilisation de la mémoire après l'exécution du code
+memory_after = psutil.virtual_memory().used
+
+# Calculer la différence d'utilisation de la mémoire
+memory_diff = (memory_after - memory_before) / 1000000000
+
+
+# Afficher les résultats
+print("Utilisation de la CPU avant l'exécution du code :", cpu_before, "%")
+print("Utilisation de la CPU après l'exécution du code :", cpu_after, "%")
+print("Différence d'utilisation de la mémoire :", memory_diff, "Go")
+print("le fichier est généré en " + str(end - start) + " secondes")
+
