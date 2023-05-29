@@ -1,5 +1,4 @@
 import configparser
-import psutil
 import json
 import os
 import random
@@ -8,12 +7,6 @@ import time
 from annony import aes_encrypt, aes_decrypt, sha256_hash, anonymisation
 import pandas as pd
 
-
-# Obtenir l'utilisation de la mémoire avant l'exécution du code
-memory_before = psutil.virtual_memory().used
-
-# Obtenir l'utilisation de la CPU avant l'exécution du code
-cpu_before = psutil.cpu_percent()
 start=time.time()
 config = configparser.ConfigParser()
 config.read('configuration.conf')
@@ -110,7 +103,7 @@ def encrypt_file(file_extension, fichier_entree, fichier_sortie,colonnes=None):
                     df[col] = anonymisation(df[col])
 
         # écrire le dataframe modifié dans un nouveau fichier excel
-        df.to_csv(fichier_sortie, index=False,sep=delimiter)
+        df.to_csv(fichier_sortie, index=False,sep=sep)
 
     elif file_extension == '.json':
         # Charger le fichier JSON en un dataframe pandas
@@ -167,19 +160,6 @@ encrypt_file(type,fichier_entree,fichier_sortie,colonnes)
 
 
 end=time.time()
-# Obtenir l'utilisation de la CPU après l'exécution du code
-cpu_after = psutil.cpu_percent()
 
-# Obtenir l'utilisation de la mémoire après l'exécution du code
-memory_after = psutil.virtual_memory().used
-
-# Calculer la différence d'utilisation de la mémoire
-memory_diff = (memory_after - memory_before) / 1000000000
-
-
-# Afficher les résultats
-print("Utilisation de la CPU avant l'exécution du code :", cpu_before, "%")
-print("Utilisation de la CPU après l'exécution du code :", cpu_after, "%")
-print("Différence d'utilisation de la mémoire :", memory_diff, "Go")
 print("le fichier est généré en " + str(end - start) + " secondes")
 
