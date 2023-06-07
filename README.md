@@ -5,7 +5,7 @@
 ### Ce projet a été créé pour l'entreprise INWI
 
 ### Installation:
-télécharger le projet : https://github.com/Aichael29/projetD-anonymisation_Inwi.git.
+télécharger le projet : https://github.com/Aichael29/Genano_anonymisation.git.
 1. Accédez au répertoire du projet via console : cd 'le chemin de projet téléchargé'.
 2. Installez les dépendances du projet : pip install -r requirements.txt.
 3. Cyptodome : pip install pycryptodomex.
